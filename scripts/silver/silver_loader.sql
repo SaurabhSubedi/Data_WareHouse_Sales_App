@@ -107,4 +107,25 @@ end
 from bronze.crm_sales_details;
 
 
+TRUNCATE TABLE silver.erp_cust_az12;
+INSERT INTO silver.erp_cust_az12(cid,bdate,gen)
+select 
+(
+case when cid like 'NAS%' then substring(cid,4,length(cid))
+else cid
+end
+) as cid,
+(
+case when bdate > CURRENT_DATE then null 
+ELSE bdate
+END 
+) as bdate,
+(
+CASE WHEN upper(trim(gen)) in ('F','FEMALE') THEN 'FEMALE'
+WHEN upper(trim(gen)) in ('M','MALE') THEN 'MALE'
+else 'Unknown'
+end 
+) as gen
+from bronze.erp_cust_az12
+
 
