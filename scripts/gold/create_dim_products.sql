@@ -1,31 +1,29 @@
-create view gold.dim_products as 
-select 
-row_number() over(order by pro.prd_start_dt,pro.prd_key) as prodcut_key,
-pro.prd_id as product_id,
-pro.prd_key as prduct_name,
-pro.prd_nm as product_name,
-pro.cat_id as prduct_category_id,
-pc.cat as product_category,
-pc.subcat as product_subcategory,
-pc.maintenance,
-pro.prd_cost as product_cost,
-pro.prd_line as product_line,
-pro.prd_start_dt as start_date,
-pro.prd_end_dt as end_date
-from 
-(
-select 
-pn.prd_id,
-pn.cat_id,
-pn.prd_key,
-pn.prd_nm,
-pn.prd_cost,
-pn.prd_line,
-pn.prd_start_dt,
-pn.prd_end_dt,
-row_number() over (partition by prd_key order by prd_start_dt desc) as row_num
-from silver.crm_prd_info pn 
-) pro 
-LEFT JOIN silver.erp_px_cat_g1v2 pc  
-on pro.cat_id = pc.id
-where pro.row_num = 1 ;
+CREATE OR REPLACE VIEW gold.dim_products
+ AS
+ SELECT row_number() OVER (ORDER BY pro.prd_start_dt, pro.prd_key) AS product_key,
+    pro.prd_id AS product_id,
+    pro.prd_key AS product_number,
+    pro.prd_nm AS product_name,
+    pro.cat_id AS product_category_id,
+    pc.cat AS product_category,
+    pc.subcat AS product_subcategory,
+    pc.maintenance,
+    pro.prd_cost AS product_cost,
+    pro.prd_line AS product_line,
+    pro.prd_start_dt AS start_date,
+    pro.prd_end_dt AS end_date
+   FROM ( SELECT pn.prd_id,
+            pn.cat_id,
+            pn.prd_key,
+            pn.prd_nm,
+            pn.prd_cost,
+            pn.prd_line,
+            pn.prd_start_dt,
+            pn.prd_end_dt,
+            row_number() OVER (PARTITION BY pn.prd_key ORDER BY pn.prd_start_dt DESC) AS row_num
+           FROM silver.crm_prd_info pn) pro
+     LEFT JOIN silver.erp_px_cat_g1v2 pc ON pro.cat_id::text = pc.id::text
+  WHERE pro.row_num = 1;
+
+ALTER TABLE gold.dim_products
+    OWNER TO postgres;
