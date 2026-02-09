@@ -126,6 +126,23 @@ WHEN upper(trim(gen)) in ('M','MALE') THEN 'MALE'
 else 'Unknown'
 end 
 ) as gen
-from bronze.erp_cust_az12
+from bronze.erp_cust_az12 ;
 
+truncate table silver.erp_loc_a101;
+insert into silver.erp_loc_a101(cid,cntry)
+select 
+(REPLACE(cid,'-','')) as cid ,
+(
+case when trim(cntry) = 'DE' then 'Germany'
+when trim(cntry) in ('US','USA') then 'United States'
+when trim(cntry) = '' or cntry is null then 'Unknown'
+else trim(cntry)
+end
+) as cntry 
+from bronze.erp_loc_a101 ;
+
+truncate table silver.erp_px_cat_g1v2;
+insert into silver.erp_px_cat_g1v2(id,cat,subcat,maintenance)
+select id,cat,subcat,maintenance
+from bronze.erp_px_cat_g1v2;
 
